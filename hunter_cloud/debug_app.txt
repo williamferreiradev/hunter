@@ -1,0 +1,31 @@
+Attributes of App: ['__annotate_func__', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_add_class', '_add_function', '_experimental_server', '_get_container_app', '_get_default_image', '_get_watch_mounts', '_init_container', '_local_state', '_logs', '_reset_container_app', '_set_local_app', '_sync_original_2686016814592', '_sync_synchronizer', '_uncreate_all_objects', '_validate_blueprint_value', 'app_id', 'cls', 'deploy', 'description', 'function', 'get_tags', 'image', 'include', 'is_interactive', 'local_entrypoint', 'lookup', 'name', 'registered_classes', 'registered_entrypoints', 'registered_functions', 'registered_web_endpoints', 'run', 'set_description', 'set_tags']
+Doc of App: A Modal App is a group of functions and classes that are deployed together.
+
+The app serves at least three purposes:
+
+* A unit of deployment for functions and classes.
+* Syncing of identities of (primarily) functions and classes across processes
+  (your local Python interpreter and every Modal container active in your application).
+* Manage log collection for everything that happens inside your code.
+
+**Registering functions with an app**
+
+The most common way to explicitly register an Object with an app is through the
+`@app.function()` decorator. It both registers the annotated function itself and
+other passed objects, like schedules and secrets, with the app:
+
+```python
+import modal
+
+app = modal.App()
+
+@app.function(
+    secrets=[modal.Secret.from_name("some_secret")],
+    schedule=modal.Period(days=1),
+)
+def foo():
+    pass
+```
+
+In this example, the secret and schedule are registered with the app.
+

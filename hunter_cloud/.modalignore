@@ -1,0 +1,7 @@
+# Ignorar logs e arquivos temporários
+*.log
+node_modules/
+.env
+__pycache__/
+.git/
+.DS_Store
