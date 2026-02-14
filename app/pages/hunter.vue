@@ -80,11 +80,25 @@ const dispararSistema = async () => {
   try {
     status.value = '🕵️ O Robô está abrindo o navegador no seu computador...'
     
+    // Pega o ID com a lógica blindada
+    const user = useSupabaseUser()
+    // @ts-ignore
+    const userId = user.value?.id || user.value?.sub
+
+    if (!userId) {
+       toast.error('Erro de Autenticação: ID do usuário não encontrado.')
+       loading.value = false
+       return
+    }
+
     // Chama o nosso backend
     // @ts-ignore
     const { data, error } = await useFetch('/api/hunter', {
       method: 'POST',
-      body: { termo: termo.value },
+      body: { 
+        termo: termo.value,
+        user_id: userId // Enviando o ID blindado
+      },
       timeout: 120000 // 2 minutos de tolerância
     })
 

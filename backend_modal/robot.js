@@ -5,10 +5,13 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Pega os argumentos que a Modal vai mandar
 const termo = process.argv[2];
+const OWNER_ID = process.argv[3]; // <--- ID do Dono da Caçada
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
 if (!termo) { console.error("❌ ERRO: Sem termo de busca!"); process.exit(1); }
+if (!OWNER_ID) { console.error("❌ ERRO: Sem ID do usuário (OWNER_ID)!"); process.exit(1); }
 
 puppeteer.use(StealthPlugin());
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -103,15 +106,21 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
                 if (data) {
                     const lead = {
+                        user_id: OWNER_ID, // VINCULANDO AO USUÁRIO (Corrigido)
                         termo_pesquisa: termo,
                         ...data,
                         tem_site: !!data.website_url,
                         nota: data.website_url ? "TEM SITE" : "SEM SITE (OPORTUNIDADE)",
-                        site_provavelmente_ruim: false
+                        site_provavelmente_ruim: false,
+                        status: 'novo' // Status inicial padrão
                     };
 
                     console.log(`✅ ${lead.nome_empresa}`);
 
+                    // Upsert agora considera o user_id?
+                    // CUIDADO: Se 'nome_empresa' for unique, isso pode dar conflito se outro user extrair a mesma empresa.
+                    // O ideal seria (user_id, nome_empresa) ser a chave composta unique.
+                    // Por enquanto, mantemos como está, mas adicionamos o user_id.
                     const { error } = await supabase.from('leads_hunter').upsert(lead, { onConflict: 'nome_empresa' });
                     if (!error) leadsSalvos.push(lead);
                 }

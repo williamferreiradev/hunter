@@ -12,7 +12,10 @@ export default defineEventHandler(async (event) => {
         const response = await fetch(MODAL_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ termo: body.termo })
+            body: JSON.stringify({
+                termo: body.termo,
+                user_id: body.user_id // Passando o ID para o robô salvar
+            })
         })
 
         // 3. Recebe o resultado

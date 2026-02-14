@@ -23,7 +23,7 @@ image = (
     )
     # --- TURBO: Instala as dependências NA IMAGEM (Globalmente) ---
     .run_commands(
-        "npm install -g puppeteer@21.5.0 puppeteer-extra puppeteer-extra-plugin-stealth @supabase/supabase-js"
+        "npm install -g puppeteer puppeteer-extra puppeteer-extra-plugin-stealth puppeteer-extra-plugin-user-preferences puppeteer-extra-plugin-user-data-dir @supabase/supabase-js"
     )
     # 4. Dependências Python (Supabase + FastAPI obrigatório)
     .pip_install("supabase", "fastapi[standard]")
@@ -36,7 +36,8 @@ image = (
         "NODE_PATH": "/usr/lib/node_modules:/usr/local/lib/node_modules"
     })
     # 6. Montagem de Arquivos (Método novo v1.3.2)
-    .add_local_dir("./", remote_path="/root/bot")
+    # Monta a pasta onde está o main.py (backend_modal) para /root/bot
+    .add_local_dir("backend_modal", remote_path="/root/bot", ignore=["node_modules", ".git", ".nuxt", ".output", "venv", "__pycache__", ".agent"])
 )
 
 app = modal.App("hunter-bot-turbo")
@@ -54,7 +55,9 @@ def run_hunter(item: dict):
     import sys
     
     termo = item.get("termo")
-    print(f"🤖 [NUVEM] Recebido pedido para: {termo}")
+    user_id = item.get("user_id", "anonymous") # Pega o ID enviado pelo Proxy
+    
+    print(f"🤖 [NUVEM] Recebido pedido para: {termo} (User: {user_id})")
 
     # 1. Localiza o script (Smart Path)
     script_path = "/root/bot/robot.js"
@@ -63,14 +66,15 @@ def run_hunter(item: dict):
         print(f"⚠️ {script_path} não encontrado. Tentando subpastas...")
         if os.path.exists("/root/bot/hunter_cloud/robot.js"):
              script_path = "/root/bot/hunter_cloud/robot.js"
-             print(f"✅ Encontrado: {script_path}")
+             # print(f"✅ Encontrado: {script_path}")
         else:
              # Lista arquivos para debug
              files = os.listdir("/root/bot")
              return {"status": "Erro", "logs": f"CRÍTICO: robot.js não encontrado! Arquivos na raiz: {files}"}
 
     # --- COMANDO DIRETO (Sem npm install) ---
-    cmd = f"node {script_path} '{termo}'"
+    # Passamos o termo E o user_id como argumentos
+    cmd = f"node {script_path} '{termo}' '{user_id}'"
     
     print(f"🚀 Executando: {cmd}")
     
